@@ -1,0 +1,309 @@
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neural_network import MLPClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+
+# Store results
+model_results = {}
+
+# a. Logistic Regression 
+
+
+# Define input and target using log-transformed dataframe
+X_log = df_transformed.drop(columns='TARGET_B')
+Y_log = df_transformed['TARGET_B']
+
+# Split into 60% training and 40% validation
+X_train_log, X_valid_log, Y_train_log, Y_valid_log = train_test_split(
+    X_log, Y_log, test_size=0.4, random_state=42, stratify=Y_log
+)
+
+# Train logistic regression model on transformed data
+logreg_log = LogisticRegression(max_iter=1000)
+logreg_log.fit(X_train_log, Y_train_log)
+
+# Predict and evaluate
+Y_pred_log = logreg_log.predict(X_valid_log)
+accuracy_log = accuracy_score(Y_valid_log, Y_pred_log)
+cm_log = confusion_matrix(Y_valid_log, Y_pred_log)
+
+
+model_results['Logistic Regression'] = accuracy_score(Y_valid_log, Y_pred_rf)
+
+
+# b. Classification Tree
+tree = DecisionTreeClassifier(random_state=42)
+tree.fit(X_train_log, Y_train_log)
+Y_pred_tree = tree.predict(X_valid_log)
+model_results['Classification Tree'] = accuracy_score(Y_valid_log, Y_pred_tree)
+
+# c. Random Forest
+rf = RandomForestClassifier(n_estimators=100, random_state=42)
+rf.fit(X_train_log, Y_train_log)
+Y_pred_rf = rf.predict(X_valid_log)
+model_results['Random Forest'] = accuracy_score(Y_valid_log, Y_pred_rf)
+
+# d. Neural Network
+nn = MLPClassifier(hidden_layer_sizes=(10,), max_iter=1000, random_state=42)
+nn.fit(X_train_log, Y_train_log)
+Y_pred_nn = nn.predict(X_valid_log)
+model_results['Neural Network'] = accuracy_score(Y_valid_log, Y_pred_nn)
+
+# e. Linear Discriminant Analysis
+lda = LinearDiscriminantAnalysis()
+lda.fit(X_train_log, Y_train_log)
+Y_pred_lda = lda.predict(X_valid_log)
+model_results['LDA'] = accuracy_score(Y_valid_log, Y_pred_lda)
+
+# Display results
+model_results
+ 
+All codes:
+import pandas as pd
+
+# Load the dataset
+df = pd.read_csv()  # Make sure the CSV is in the same directory as your notebook
+
+# Frequency table: Donors vs Non-Donors
+frequency_table = df['TARGET_B'].value_counts().rename(index={0: 'Non-Donors', 1: 'Donors'})
+print("Frequency Table:\n", frequency_table)
+
+# Average donation for all donors only (TARGET_B = 1)
+average_donation = df[df['TARGET_B'] == 1]['TARGET_D'].mean()
+print("\nAverage Donation (Donors Only): ${:.2f}".format(average_donation))
+# Drop non-useful columns
+df = df.drop(columns=['Row Id', 'Row Id.', 'TARGET_D'])
+
+# Display the updated DataFrame structure
+df.info()
+from sklearn.model_selection import train_test_split
+
+# Define input (X) and output (Y) variables
+X = df.drop(columns='TARGET_B')  # All columns except the target
+Y = df['TARGET_B']               # Target variable
+
+# Split the dataset: 60% training, 40% validation
+X_train, X_valid, Y_train, Y_valid = train_test_split(
+    X, Y, test_size=0.4, random_state=42, stratify=Y  # stratify to preserve class balance
+)
+
+# Show dimensions of resulting datasets
+print("Training set shape:", X_train.shape)
+print("Validation set shape:", X_valid.shape)
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+
+# Initialize and fit logistic regression model
+logreg = LogisticRegression(max_iter=1000)
+logreg.fit(X_train, Y_train)
+
+# Predict on validation set
+Y_pred = logreg.predict(X_valid)
+
+# Generate and display confusion matrix
+cm = confusion_matrix(Y_valid, Y_pred)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Non-Donor", "Donor"])
+disp.plot(cmap="Blues")
+from sklearn.metrics import accuracy_score
+
+# Calculate accuracy
+accuracy = accuracy_score(Y_valid, Y_pred)
+print(f"Accuracy: {accuracy:.4f}")
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+
+# Initialize and fit a classification tree
+tree = DecisionTreeClassifier(random_state=42)
+tree.fit(X_train, Y_train)
+
+# Predict on validation data
+Y_pred_tree = tree.predict(X_valid)
+
+# Confusion matrix for classification tree
+cm_tree = confusion_matrix(Y_valid, Y_pred_tree)
+disp_tree = ConfusionMatrixDisplay(confusion_matrix=cm_tree, display_labels=["Non-Donor", "Donor"])
+disp_tree.plot(cmap="Greens")
+
+from sklearn.metrics import accuracy_score
+
+# Calculate accuracy of the classification tree
+accuracy_tree = accuracy_score(Y_valid, Y_pred_tree)
+print(f"Decision Tree Accuracy: {accuracy_tree:.4f}")
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, accuracy_score
+
+# Initialize and fit the Random Forest model
+rf = RandomForestClassifier(random_state=42, n_estimators=100)
+rf.fit(X_train, Y_train)
+
+# Predict on validation data
+Y_pred_rf = rf.predict(X_valid)
+
+# Confusion matrix
+cm_rf = confusion_matrix(Y_valid, Y_pred_rf)
+disp_rf = ConfusionMatrixDisplay(confusion_matrix=cm_rf, display_labels=["Non-Donor", "Donor"])
+disp_rf.plot(cmap="Oranges")
+
+# Accuracy
+accuracy_rf = accuracy_score(Y_valid, Y_pred_rf)
+print(f"Random Forest Accuracy: {accuracy_rf:.4f}")
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, accuracy_score
+
+# Initialize and fit the neural network model
+nn = MLPClassifier(hidden_layer_sizes=(10,), max_iter=1000, random_state=42)
+nn.fit(X_train, Y_train)
+
+# Predict on validation data
+Y_pred_nn = nn.predict(X_valid)
+
+# Confusion matrix
+cm_nn = confusion_matrix(Y_valid, Y_pred_nn)
+disp_nn = ConfusionMatrixDisplay(confusion_matrix=cm_nn, display_labels=["Non-Donor", "Donor"])
+disp_nn.plot(cmap="Purples")
+
+# Accuracy
+accuracy_nn = accuracy_score(Y_valid, Y_pred_nn)
+print(f"Neural Network Accuracy: {accuracy_nn:.4f}")
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, accuracy_score
+
+# Initialize and fit LDA model
+lda = LinearDiscriminantAnalysis()
+lda.fit(X_train, Y_train)
+
+# Predict on validation data
+Y_pred_lda = lda.predict(X_valid)
+
+# Confusion matrix
+cm_lda = confusion_matrix(Y_valid, Y_pred_lda)
+disp_lda = ConfusionMatrixDisplay(confusion_matrix=cm_lda, display_labels=["Non-Donor", "Donor"])
+disp_lda.plot(cmap="coolwarm")
+
+# Accuracy
+accuracy_lda = accuracy_score(Y_valid, Y_pred_lda)
+print(f"LDA Accuracy: {accuracy_lda:.4f}")
+def detect_outliers_iqr(data, columns):
+    outlier_summary = {}
+
+    for col in columns:
+        Q1 = data[col].quantile(0.25)
+        Q3 = data[col].quantile(0.75)
+        IQR = Q3 - Q1
+
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+
+        outliers = data[(data[col] < lower_bound) | (data[col] > upper_bound)]
+        outlier_summary[col] = {
+            'num_outliers': len(outliers),
+            'percent_outliers': round(100 * len(outliers) / len(data), 2),
+            'lower_bound': lower_bound,
+            'upper_bound': upper_bound
+        }
+
+    return pd.DataFrame(outlier_summary).T
+
+# Specify columns you want to check for outliers
+columns_to_check = ['RAMNTALL', 'MAXRAMNT', 'LASTGIFT', 'AVGGIFT']
+
+# Run the function
+outliers_report = detect_outliers_iqr(df, columns_to_check)
+outliers_report
+import numpy as np
+
+# Apply log transformation to outlier-heavy numeric columns
+df_transformed = df.copy()
+for col in ['RAMNTALL', 'MAXRAMNT', 'LASTGIFT', 'AVGGIFT']:
+    # Apply log1p to handle zero values (log1p = log(1 + x))
+    df_transformed[col] = np.log1p(df[col])
+
+# Display summary statistics after transformation
+df_transformed[['RAMNTALL', 'MAXRAMNT', 'LASTGIFT', 'AVGGIFT']].describe()
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neural_network import MLPClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+
+# Store results
+model_results = {}
+
+# a. Logistic Regression 
+
+
+# Define input and target using log-transformed dataframe
+X_log = df_transformed.drop(columns='TARGET_B')
+Y_log = df_transformed['TARGET_B']
+
+# Split into 60% training and 40% validation
+X_train_log, X_valid_log, Y_train_log, Y_valid_log = train_test_split(
+    X_log, Y_log, test_size=0.4, random_state=42, stratify=Y_log
+)
+
+# Train logistic regression model on transformed data
+logreg_log = LogisticRegression(max_iter=1000)
+logreg_log.fit(X_train_log, Y_train_log)
+
+# Predict and evaluate
+Y_pred_log = logreg_log.predict(X_valid_log)
+accuracy_log = accuracy_score(Y_valid_log, Y_pred_log)
+cm_log = confusion_matrix(Y_valid_log, Y_pred_log)
+
+
+model_results['Logistic Regression'] = accuracy_score(Y_valid_log, Y_pred_rf)
+
+
+# b. Classification Tree
+tree = DecisionTreeClassifier(random_state=42)
+tree.fit(X_train_log, Y_train_log)
+Y_pred_tree = tree.predict(X_valid_log)
+model_results['Classification Tree'] = accuracy_score(Y_valid_log, Y_pred_tree)
+
+# c. Random Forest
+rf = RandomForestClassifier(n_estimators=100, random_state=42)
+rf.fit(X_train_log, Y_train_log)
+Y_pred_rf = rf.predict(X_valid_log)
+model_results['Random Forest'] = accuracy_score(Y_valid_log, Y_pred_rf)
+
+# d. Neural Network
+nn = MLPClassifier(hidden_layer_sizes=(10,), max_iter=1000, random_state=42)
+nn.fit(X_train_log, Y_train_log)
+Y_pred_nn = nn.predict(X_valid_log)
+model_results['Neural Network'] = accuracy_score(Y_valid_log, Y_pred_nn)
+
+# e. Linear Discriminant Analysis
+lda = LinearDiscriminantAnalysis()
+lda.fit(X_train_log, Y_train_log)
+Y_pred_lda = lda.predict(X_valid_log)
+model_results['LDA'] = accuracy_score(Y_valid_log, Y_pred_lda)
+
+# Display results
+model_results
+import matplotlib.pyplot as plt
+
+# Create a 3x2 subplot layout
+fig, axes = plt.subplots(3, 2, figsize=(15, 18))
+axes = axes.ravel()
+
+# List of models and their respective confusion matrices and display names
+conf_matrices = [
+    (cm_log, "Logistic Regression"),
+    (cm_tree, "Classification Tree"),
+    (cm_rf, "Random Forest"),
+    (cm_nn, "Neural Network"),
+    (cm_lda, "LDA")
+]
+
+# Plot each confusion matrix
+for i, (cm, title) in enumerate(conf_matrices):
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Non-Donor", "Donor"])
+    disp.plot(ax=axes[i], cmap="Blues")
+    axes[i].set_title(title)
+
+# Hide the last subplot if unused
+axes[-1].axis('off')
+
+# Adjust layout and save
+plt.tight_layout()
+
+plt.show()
